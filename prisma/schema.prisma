@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  OPEN
+  COMING_SOON
+  SOLD_OUT
+  CLOSED
+}
+
+model Event {
+  id                   String             @id @default(cuid())
+  title                String
+  slug                 String             @unique
+  shortDescription     String
+  description          String
+  eventDate            DateTime
+  endDate              DateTime?
+  startTime            String?
+  registrationDeadline DateTime?
+  country              String
+  countryCode          String
+  state                String?
+  city                 String
+  venue                String?
+  latitude             Float?
+  longitude            Float?
+  organizerName        String
+  organizerEmail       String?
+  organizerPhone       String?
+  websiteUrl           String?
+  registrationUrl      String?
+  imageUrl             String?
+  imageAlt             String?
+  eventType            String
+  status               EventStatus        @default(DRAFT)
+  registrationStatus   RegistrationStatus @default(COMING_SOON)
+  featured             Boolean            @default(false)
+  price                Float?
+  currency             String?
+  tags                 String             @default("")
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  distances            EventDistance[]
+
+  @@index([eventDate])
+  @@index([country])
+  @@index([city])
+  @@index([eventType])
+  @@index([status])
+  @@index([registrationStatus])
+  @@index([featured])
+}
+
+model EventDistance {
+  id       String @id @default(cuid())
+  name     String
+  distance Float
+  eventId  String
+  event    Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("ADMIN")
+  createdAt    DateTime @default(now())
+}
